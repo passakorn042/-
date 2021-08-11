@@ -1,0 +1,79 @@
+{"nbformat":4,"nbformat_minor":0,"metadata":{"colab":{"name":"Copy of simple_lp_program.ipynb","provenance":[{"file_id":"https://github.com/google/or-tools/blob/stable/examples/notebook/linear_solver/simple_lp_program.ipynb","timestamp":1628594357057}]},"language_info":{"name":"python"},"kernelspec":{"name":"python3","display_name":"Python 3"}},"cells":[{"cell_type":"markdown","metadata":{"id":"tY4SPQTZTh0k"},"source":["##### Copyright 2021 Google LLC."]},{"cell_type":"markdown","metadata":{"id":"34GH1RcHTh0m"},"source":["Licensed under the Apache License, Version 2.0 (the \"License\");\n","you may not use this file except in compliance with the License.\n","You may obtain a copy of the License at\n","\n","    http://www.apache.org/licenses/LICENSE-2.0\n","\n","Unless required by applicable law or agreed to in writing, software\n","distributed under the License is distributed on an \"AS IS\" BASIS,\n","WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n","See the License for the specific language governing permissions and\n","limitations under the License.\n"]},{"cell_type":"markdown","metadata":{"id":"w69oBDT_Th0m"},"source":["# simple_lp_program"]},{"cell_type":"markdown","metadata":{"id":"6qcp9lR_Th0n"},"source":["<table align=\"left\">\n","<td>\n","<a href=\"https://colab.research.google.com/github/google/or-tools/blob/master/examples/notebook/linear_solver/simple_lp_program.ipynb\"><img src=\"https://raw.githubusercontent.com/google/or-tools/master/tools/colab_32px.png\"/>Run in Google Colab</a>\n","</td>\n","<td>\n","<a href=\"https://github.com/google/or-tools/blob/master/ortools/linear_solver/samples/simple_lp_program.py\"><img src=\"https://raw.githubusercontent.com/google/or-tools/master/tools/github_32px.png\"/>View source on GitHub</a>\n","</td>\n","</table>"]},{"cell_type":"markdown","metadata":{"id":"r8RfPz9JTh0n"},"source":["First, you must install [ortools](https://pypi.org/project/ortools/) package in this colab."]},{"cell_type":"code","metadata":{"id":"fD9NepT9Th0n","colab":{"base_uri":"https://localhost:8080/"},"executionInfo":{"status":"ok","timestamp":1628592555391,"user_tz":-420,"elapsed":5256,"user":{"displayName":"","photoUrl":"","userId":""}},"outputId":"2dd12032-cc48-4694-e79e-8a19510cecb7"},"source":["!pip install ortools"],"execution_count":null,"outputs":[{"output_type":"stream","text":["Collecting ortools\n","  Downloading ortools-9.0.9048-cp37-cp37m-manylinux1_x86_64.whl (14.4 MB)\n","\u001b[K     |████████████████████████████████| 14.4 MB 95 kB/s \n","\u001b[?25hRequirement already satisfied: protobuf>=3.15.8 in /usr/local/lib/python3.7/dist-packages (from ortools) (3.17.3)\n","Requirement already satisfied: absl-py>=0.11 in /usr/local/lib/python3.7/dist-packages (from ortools) (0.12.0)\n","Requirement already satisfied: six in /usr/local/lib/python3.7/dist-packages (from absl-py>=0.11->ortools) (1.15.0)\n","Installing collected packages: ortools\n","Successfully installed ortools-9.0.9048\n"],"name":"stdout"}]},{"cell_type":"code","metadata":{"id":"E6wQH8nkTh0o","colab":{"base_uri":"https://localhost:8080/"},"executionInfo":{"status":"ok","timestamp":1628592873503,"user_tz":-420,"elapsed":418,"user":{"displayName":"","photoUrl":"","userId":""}},"outputId":"4a3f573a-83c8-44ef-cf2e-4e183b14b57c"},"source":["#!/usr/bin/env python3\n","# Copyright 2010-2021 Google LLC\n","# Licensed under the Apache License, Version 2.0 (the \"License\");\n","# you may not use this file except in compliance with the License.\n","# You may obtain a copy of the License at\n","#\n","#     http://www.apache.org/licenses/LICENSE-2.0\n","#\n","# Unless required by applicable law or agreed to in writing, software\n","# distributed under the License is distributed on an \"AS IS\" BASIS,\n","# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n","# See the License for the specific language governing permissions and\n","# limitations under the License.\n","\"\"\"Minimal example to call the GLOP solver.\"\"\"\n","# [START program]\n","# [START import]\n","from ortools.linear_solver import pywraplp\n","# [END import]\n","\n","\n","\n","solver = pywraplp.Solver.CreateSolver('GLOP')\n","\n","\n","\n","infinity = solver.infinity()\n","f = solver.NumVar(0.0, infinity, 'f')\n","p1 = solver.NumVar(0.0, infinity, 'p1')\n","p2 = solver.NumVar(0.0, infinity, 'p2')\n","p3 = solver.NumVar(0.0, infinity, 'p3')\n","p4 = solver.NumVar(0.0, infinity, 'p4')\n","p5 = solver.NumVar(0.0, infinity, 'p5')\n","\n","print('Number of variables =', solver.NumVariables())\n","# [END variables]\n","\n","# [START constraints]\n","solver.Add(f + p1 >= 10)\n","solver.Add(f + p1 + p2 >= 12)\n","solver.Add(0.5*f + p1 + p2 + p3 >= 14)\n","solver.Add(0.5*f + p1 + p2 + p3 +p4 >= 16)\n","solver.Add(f + p2 + p3 + p4 + p5 >= 18)\n","solver.Add(f + p3 + p4 + p5 >= 17)\n","solver.Add(f + p4 + p5 >= 15)\n","solver.Add(f + p5 >= 10)\n","solver.Add(f <= 12)\n","\n","print('Number of constraints =', solver.NumConstraints())\n","# [END constraints]\n","\n","# [START objective]\n","# Maximize x + 10 * y.\n","solver.Minimize(10*f + 7*p2 + 2*p3 +  5*p4)\n","# [END objective]\n","\n","# [START solve]\n","status = solver.Solve()\n","# [END solve]\n","\n","# [START print_solution]\n","if status == pywraplp.Solver.OPTIMAL:\n","    print('Solution:')\n","    print('Objective value =', solver.Objective().Value())\n","    print('f =', f.solution_value())\n","    print('p1 =', p1.solution_value())\n","    print('p2 =', p2.solution_value())\n","    print('p3 =', p3.solution_value())\n","    print('p4 =', p4.solution_value())\n","    print('p5 =', p5.solution_value())\n","    \n","else:\n","    print('The problem does not have an optimal solution.')\n","# [END print_solution]\n","\n","# [START advanced]\n","print('\\nAdvanced usage:')\n","print('Problem solved in %f milliseconds' % solver.wall_time())\n","print('Problem solved in %d iterations' % solver.iterations())\n","# [END advanced]\n","\n"],"execution_count":null,"outputs":[{"output_type":"stream","text":["Number of variables = 6\n","Number of constraints = 9\n","Solution:\n","Objective value = 0.0\n","f = 0.0\n","p1 = 16.0\n","p2 = 0.0\n","p3 = 0.0\n","p4 = 0.0\n","p5 = 18.0\n","\n","Advanced usage:\n","Problem solved in 7.000000 milliseconds\n","Problem solved in 0 iterations\n"],"name":"stdout"}]}]}#!/usr/bin/env python3
+# Copyright 2010-2021 Google LLC
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Minimal example to call the GLOP solver."""
+# [START program]
+# [START import]
+from ortools.linear_solver import pywraplp
+# [END import]
+
+
+
+solver = pywraplp.Solver.CreateSolver('GLOP')
+
+
+
+infinity = solver.infinity()
+f = solver.NumVar(0.0, infinity, 'f')
+p1 = solver.NumVar(0.0, infinity, 'p1')
+p2 = solver.NumVar(0.0, infinity, 'p2')
+p3 = solver.NumVar(0.0, infinity, 'p3')
+p4 = solver.NumVar(0.0, infinity, 'p4')
+p5 = solver.NumVar(0.0, infinity, 'p5')
+
+print('Number of variables =', solver.NumVariables())
+# [END variables]
+
+# [START constraints]
+solver.Add(f + p1 >= 10)
+solver.Add(f + p1 + p2 >= 12)
+solver.Add(0.5*f + p1 + p2 + p3 >= 14)
+solver.Add(0.5*f + p1 + p2 + p3 +p4 >= 16)
+solver.Add(f + p2 + p3 + p4 + p5 >= 18)
+solver.Add(f + p3 + p4 + p5 >= 17)
+solver.Add(f + p4 + p5 >= 15)
+solver.Add(f + p5 >= 10)
+solver.Add(f <= 12)
+
+print('Number of constraints =', solver.NumConstraints())
+# [END constraints]
+
+# [START objective]
+# Maximize x + 10 * y.
+solver.Minimize(10*f + 7*p2 + 2*p3 +  5*p4)
+# [END objective]
+
+# [START solve]
+status = solver.Solve()
+# [END solve]
+
+# [START print_solution]
+if status == pywraplp.Solver.OPTIMAL:
+    print('Solution:')
+    print('Objective value =', solver.Objective().Value())
+    print('f =', f.solution_value())
+    print('p1 =', p1.solution_value())
+    print('p2 =', p2.solution_value())
+    print('p3 =', p3.solution_value())
+    print('p4 =', p4.solution_value())
+    print('p5 =', p5.solution_value())
+    
+else:
+    print('The problem does not have an optimal solution.')
+# [END print_solution]
+
+# [START advanced]
+print('\nAdvanced usage:')
+print('Problem solved in %f milliseconds' % solver.wall_time())
+print('Problem solved in %d iterations' % solver.iterations())
+# [END advanced]
